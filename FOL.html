@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALARM MONITORING PRESSURE FOL</title>
+    <style>
+        body {
+            background-image: url('wall.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        .red-text {
+            color: red;
+        }
+
+        .footer {
+            display: block;
+			text-align: left;
+			margin-bottom: 10px;
+        }
+
+        .footer a {
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ALARM MONITORING PRESSURE FOL</h1>
+    <div id="data"></div>
+
+    <audio id="alarmAudio" src="s.mp3"></audio>
+
+    <!-- Tombol "Turn Off Warning Spot" dan "Turn On Warning Spot" untuk Spot 1 -->
+    <button id="turnOffSpot1" onclick="toggleAlarm(1, false)">Turn Off Warning Spot 1</button>
+    <button id="turnOnSpot1" onclick="toggleAlarm(1, true)" style="display: none;">Turn On Warning Spot 1</button>
+    <!-- Tombol "Turn Off Warning Spot" dan "Turn On Warning Spot" untuk Spot 2 -->
+    <button id="turnOffSpot2" onclick="toggleAlarm(2, false)">Turn Off Warning Spot 2</button>
+    <button id="turnOnSpot2" onclick="toggleAlarm(2, true)" style="display: none;">Turn On Warning Spot 2</button>
+    <!-- Tombol "Turn Off Warning Spot" dan "Turn On Warning Spot" untuk Spot 3 -->
+    <button id="turnOffSpot3" onclick="toggleAlarm(3, false)">Turn Off Warning Spot 3</button>
+    <button id="turnOnSpot3" onclick="toggleAlarm(3, true)" style="display: none;">Turn On Warning Spot 3</button>
+    <!-- Tombol "Turn Off Warning Spot" dan "Turn On Warning Spot" untuk Spot 4 -->
+    <button id="turnOffSpot4" onclick="toggleAlarm(4, false)">Turn Off Warning Spot 4</button>
+    <button id="turnOnSpot4" onclick="toggleAlarm(4, true)" style="display: none;">Turn On Warning Spot 4</button>
+    <!-- Tombol "Turn Off Warning Spot" dan "Turn On Warning Spot" untuk Spot 5 -->
+    <button id="turnOffSpot5" onclick="toggleAlarm(5, false)">Turn Off Warning Spot 5</button>
+    <button id="turnOnSpot5" onclick="toggleAlarm(5, true)" style="display: none;">Turn On Warning Spot 5</button>
+    <!-- Tombol "Turn Off Warning Spot" dan "Turn On Warning Spot" untuk Spot 6 -->
+    <button id="turnOffSpot6" onclick="toggleAlarm(6, false)">Turn Off Warning Spot 6</button>
+    <button id="turnOnSpot6" onclick="toggleAlarm(6, true)" style="display: none;">Turn On Warning Spot 6</button>
+
+    <div class="footer">
+        <!-- Tautan ke Prediksi Lokasi Kebocoran Line KAS-TPN -->
+        <a href="https://predkas-gmzsbp8tqqxbv4bbh4mljv.streamlit.app/" target="_blank">Prediksi Lokasi Kebocoran Line KAS-TPN</a>
+        <!-- Tautan ke Prediksi Lokasi Kebocoran Line BJG-TPN -->
+        <a href="https://1prediksilokasi-9ayd4lnnpsfbicua3fayqx.streamlit.app/" target="_blank">Prediksi Lokasi Kebocoran Line BJG-TPN</a>
+    </div>
+
+    <script>
+        // API configurations, functions, and script continue...
+		 // API configurations
+        const READ_API_KEY = 'SPYMD6ONS3YT6HKN';
+        const CHANNEL_ID = '2405457';
+        const FIELD_ID_1 = '1';
+        const FIELD_ID_2 = '2';
+        const FIELD_ID_3 = '3';
+        const FIELD_ID_4 = '4';
+        const FIELD_ID_5 = '5';
+        const FIELD_ID_6 = '6';
+        const REFRESH_INTERVAL = 5000; // Refresh interval in milliseconds (e.g., 5000ms = 5 seconds)
+
+        // Variables to track alarm status for Spot 1 to Spot 6
+        let alarmActiveSpot1 = true;
+        let alarmActiveSpot2 = true;
+        let alarmActiveSpot3 = true;
+        let alarmActiveSpot4 = true;
+        let alarmActiveSpot5 = true;
+        let alarmActiveSpot6 = true;
+
+        // Function to fetch data from Thingspeak
+        async function fetchData() {
+            const url1 = `https://api.thingspeak.com/channels/${CHANNEL_ID}/fields/${FIELD_ID_1}.json?api_key=${READ_API_KEY}&results=1`;
+            const response1 = await fetch(url1);
+            const data1 = await response1.json();
+
+            const url2 = `https://api.thingspeak.com/channels/${CHANNEL_ID}/fields/${FIELD_ID_2}.json?api_key=${READ_API_KEY}&results=1`;
+            const response2 = await fetch(url2);
+            const data2 = await response2.json();
+
+            const url3 = `https://api.thingspeak.com/channels/${CHANNEL_ID}/fields/${FIELD_ID_3}.json?api_key=${READ_API_KEY}&results=1`;
+            const response3 = await fetch(url3);
+            const data3 = await response3.json();
+
+            const url4 = `https://api.thingspeak.com/channels/${CHANNEL_ID}/fields/${FIELD_ID_4}.json?api_key=${READ_API_KEY}&results=1`;
+            const response4 = await fetch(url4);
+            const data4 = await response4.json();
+
+            const url5 = `https://api.thingspeak.com/channels/${CHANNEL_ID}/fields/${FIELD_ID_5}.json?api_key=${READ_API_KEY}&results=1`;
+            const response5 = await fetch(url5);
+            const data5 = await response5.json();
+
+            const url6 = `https://api.thingspeak.com/channels/${CHANNEL_ID}/fields/${FIELD_ID_6}.json?api_key=${READ_API_KEY}&results=1`;
+            const response6 = await fetch(url6);
+            const data6 = await response6.json();
+
+            return {
+                pressure1: data1.feeds[0].field1,
+                pressure2: data2.feeds[0].field2,
+                pressure3: data3.feeds[0].field3,
+                pressure4: data4.feeds[0].field4,
+                pressure5: data5.feeds[0].field5,
+                pressure6: data6.feeds[0].field6
+            };
+        }
+
+        // Function to display data
+       async function displayData() {
+    const dataContainer = document.getElementById('data');
+
+    // Fetch data
+    const { pressure1, pressure2, pressure3, pressure4, pressure5, pressure6 } = await fetchData();
+
+    // Display data
+    dataContainer.innerHTML = `
+        <p class="${(pressure1 > 100 && pressure1 < 230 && alarmActiveSpot1) ? 'red-text' : ''}">1. FOL MGS BJG: <span id="pressure1Value">${pressure1}</span> (PSI)</p>
+        <p class="${(pressure2 > 100 && pressure2 < 128 && alarmActiveSpot2) ? 'red-text' : ''}">2. FOL MGS KAS: <span id="pressure2Value">${pressure2}</span> (PSI)</p>
+        <p class="${(pressure3 > 45 && pressure3 < 181 && alarmActiveSpot3) ? 'red-text' : ''}">3. FOL BOOSTER BJG-TPN: <span id="pressure3Value">${pressure3}</span> (PSI)</p>
+        <p class="${(pressure4 > 200 && pressure4 < 245 && alarmActiveSpot4) ? 'red-text' : ''}">4. FOL KTT: <span id="pressure4Value">${pressure4}</span> (PSI)</p>
+        <p class="${(pressure5 > 0 && pressure5 < 10 && alarmActiveSpot5) ? 'red-text' : ''}">5. FOL SGL: <span id="pressure5Value">${pressure5}</span> (PSI)</p>
+        <p class="${(pressure6 > 0 && pressure6 < 5 && alarmActiveSpot6) ? 'red-text' : ''}">6. FOL MOS: <span id="pressure6Value">${pressure6}</span> (PSI)</p>
+    `;
+
+    // Update pressure values
+    document.getElementById('pressure1Value').textContent = pressure1;
+    document.getElementById('pressure2Value').textContent = pressure2;
+    document.getElementById('pressure3Value').textContent = pressure3;
+    document.getElementById('pressure4Value').textContent = pressure4;
+    document.getElementById('pressure5Value').textContent = pressure5;
+    document.getElementById('pressure6Value').textContent = pressure6;
+
+            // Check for alarms
+            if (pressure1 > 100 && pressure1 < 230 && alarmActiveSpot1) {
+                triggerAlarm(1);
+            }
+            if (pressure2 > 100 && pressure2 < 128 && alarmActiveSpot2) {
+                triggerAlarm(2);
+            }
+            if (pressure3 > 45 && pressure3 < 181 && alarmActiveSpot3) {
+                triggerAlarm(3);
+            }
+            if (pressure4 > 200 && pressure4 < 245 && alarmActiveSpot4) {
+                triggerAlarm(4);
+            }
+            if (pressure5 > 0 && pressure5 < 10 && alarmActiveSpot5) {
+                triggerAlarm(5);
+            }
+            if (pressure6 > 0 && pressure6 < 5 && alarmActiveSpot6) {
+                triggerAlarm(6);
+            }
+        }
+
+        // Function to trigger the alarm buzzer
+        function triggerAlarm(spot) {
+            const alarmAudio = document.getElementById('alarmAudio');
+            alarmAudio.play();
+        }
+
+        // Function to toggle alarm for a specific spot
+        function toggleAlarm(spot, activate) {
+            if (spot === 1) {
+                alarmActiveSpot1 = activate;
+                document.getElementById('turnOffSpot1').style.display = activate ? 'inline-block' : 'none';
+                document.getElementById('turnOnSpot1').style.display = activate ? 'none' : 'inline-block';
+            } else if (spot === 2) {
+                alarmActiveSpot2 = activate;
+                document.getElementById('turnOffSpot2').style.display = activate ? 'inline-block' : 'none';
+                document.getElementById('turnOnSpot2').style.display = activate ? 'none' : 'inline-block';
+            } else if (spot === 3) {
+                alarmActiveSpot3 = activate;
+                document.getElementById('turnOffSpot3').style.display = activate ? 'inline-block' : 'none';
+                document.getElementById('turnOnSpot3').style.display = activate ? 'none' : 'inline-block';
+            } else if (spot === 4) {
+                alarmActiveSpot4 = activate;
+                document.getElementById('turnOffSpot4').style.display = activate ? 'inline-block' : 'none';
+                document.getElementById('turnOnSpot4').style.display = activate ? 'none' : 'inline-block';
+            } else if (spot === 5) {
+                alarmActiveSpot5 = activate;
+                document.getElementById('turnOffSpot5').style.display = activate ? 'inline-block' : 'none';
+                document.getElementById('turnOnSpot5').style.display = activate ? 'none' : 'inline-block';
+            } else if (spot === 6) {
+                alarmActiveSpot6 = activate;
+                document.getElementById('turnOffSpot6').style.display = activate ? 'inline-block' : 'none';
+                document.getElementById('turnOnSpot6').style.display = activate ? 'none' : 'inline-block';
+            }
+        }
+
+        // Function to periodically refresh data
+        function startPolling() {
+            displayData(); // Initial display
+            setInterval(displayData, REFRESH_INTERVAL); // Set interval for polling
+        }
+
+        // Start polling when the page loads
+        window.onload = startPolling;
+    </script>
+</body>
+</html>
